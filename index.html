@@ -221,7 +221,7 @@
           }
           //NOTE: Not using JS Temporal API here. Maybe convert in future.
           const date = new Date();
-          console.log("refreshEventsData ran at this second:",date.getSeconds())
+          // console.log("refreshEventsData ran at this second:",date.getSeconds())
           // if (nowTime.second.toString() == "0" || nowTime.second % 5 == 0) {
           if (date.getSeconds() == "10" || date.getSeconds() == "30" || date.getSeconds() == "50") {
             console.log("updateEventsData: ", date.getMilliseconds());

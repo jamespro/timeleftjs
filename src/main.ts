@@ -2,7 +2,7 @@ import { Temporal } from "temporal-polyfill";
 import { periods } from "./periods";
 import { eventsDataJSON } from "./eventsdata";
 // import "./style.css";
-
+console.log("%ctimeleft base10-20240421-1100", "background-color:lime");
 //For Fly.io, you can set environment variables through their web interface or CLI
 //const clientId = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 //const clientSecret = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_SECRET;
