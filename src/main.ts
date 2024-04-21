@@ -2,7 +2,7 @@ import { Temporal } from "temporal-polyfill";
 import { periods } from "./periods";
 import { eventsDataJSON } from "./eventsdata";
 // import "./style.css";
-console.log("%ctimeleft base10-20240421-1100", "background-color:lime");
+console.log("%ctimeleft base10-20240421-1159", "background-color:lime");
 //For Fly.io, you can set environment variables through their web interface or CLI
 //const clientId = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 //const clientSecret = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_SECRET;
@@ -123,6 +123,11 @@ function getPeriodEnd(
 periodEnd = getPeriodEnd(nowTime, endTimes);
 
 // Get the periodColor which is the color of the period which the time is in
+const periodColors = Object.values(periods).map((period) => ({
+  start: period.start,
+  color: period.color,
+}));
+
 function getPeriodColor(
   nowTime: Temporal.PlainTime,
   periodColors: { start: Temporal.PlainTime; color: string }[]
@@ -139,10 +144,6 @@ function getPeriodColor(
   return periodColor;
 }
 
-const periodColors = Object.values(periods).map((period) => ({
-  start: period.start,
-  color: period.color,
-}));
 periodColor = getPeriodColor(nowTime, periodColors);
 
 // Get the periodName which is the Name of the period which the time is in

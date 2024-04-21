@@ -224,7 +224,7 @@
           // console.log("refreshEventsData ran at this second:",date.getSeconds())
           // if (nowTime.second.toString() == "0" || nowTime.second % 5 == 0) {
           if (date.getSeconds() == "10" || date.getSeconds() == "30" || date.getSeconds() == "50") {
-            console.log("updateEventsData: ", date.getMilliseconds());
+            console.log(`%cupdateEventsData: ${date.toISOString()}`,`background-color:lavender`);
             // check if we have a valid connection to google calendar api. Don't update data if we cannot connect.
             // except: we still have the old eventsData that has what we got from the API.
             const token = gapi.client.getToken();
