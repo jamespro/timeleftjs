@@ -261,7 +261,7 @@
             // if (token && Temporal.Now.instant().compare(Temporal.Now.instant().add({ seconds: token.expires_in })) < 0) {
             
               if (token && tokenExpiry > date) {
-                console.log(`%token is valid. Expires: ${tokenExpiry}`, `background-color:lime`);
+                console.log(`%ctoken is valid. Expires: ${tokenExpiry}`, `background-color:lime`);
                 updateEventsData();
             } else {
                 console.log(`%ctoken is invalid or missing`, `background-color:yellow`);
