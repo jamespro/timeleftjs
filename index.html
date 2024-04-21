@@ -172,27 +172,39 @@
           };
           response = await gapi.client.calendar.events.list(request);
         } catch (err) {
-          console.warn("Error getEvents:");
-          console.log("err.dateTime (why is it undefined?):");
-          console.log(err.dateTime);
-          console.log("err.message (why is it undefined?):");
-          console.log(err.message);
-          return;
+          console.warn(`%cError getEvents:`,`background-color:yellow`);
+
+          // Log the entire error object to understand what data is available
+          console.log(err);
+
+          // Access more typical error properties
+          console.log("Error status (if available):", err.status);
+          console.log("Error message:", err.result?.error?.message || "No error message available");
+
+          // Handle specific errors
+          if (err.status === 401) {
+            // Specific logic to handle unauthorized access, such as refreshing the token or stopping refresh attempts
+            console.log("Unauthorized access, need to refresh token or reauthenticate.");
+          }
+
+
+          return; // Exit the function upon error
         }
         return response.result.items;
       }
       function updateEventsData() {
         getEvents().then((response) => {
-          // update eventsData to use this instead of eventsDataJSON
+
+          if (!response || response.length === 0) {
+            // If the response is empty or undefined, log a warning and stop the refresh.
+            console.warn('No events data received, stopping refresh.');
+            keepRefreshing = false; // Assume keepRefreshing is accessible here.
+            return;
+          }
+              // update eventsData to use this instead of eventsDataJSON
           externalEventsData = response;
           console.log('%cexternalEventsData updated:','background-color:lightblue');
           console.log(externalEventsData);
-          // update the UI
-          // if I trigger refresh, will it be using this new data? 
-          // trigger refresh to have it use this new data
-          // either update the data that is being referenced when refresh is run, maybe a global variable?
-          // or trigger refresh directly and send it this new data
-          // Check if both start and end have the dateTime property! for those all-day events or just reminders
           let eventsData = externalEventsData.filter(event => 
             event.start.dateTime && event.end.dateTime
           ).map((event) => {
@@ -210,9 +222,22 @@
           localStorage.setItem("eventsData", JSON.stringify(eventsData));
           console.log('%ceventsData updated:','background-color:silver');
           console.log(eventsData);
+        }).catch((error) => {
+          // Handle any errors that occur during getEvents
+          console.error('Failed to update events data:', error);
+          keepRefreshing = false; // Stop trying to refresh data if an error occurs
         })
       }
       let keepRefreshing = true; // set the default to refresh
+
+      function setTokenExpiry(token) {
+          if (token) {
+              const currentTime = new Date().getTime(); // Current time in milliseconds
+              const expiresInMs = token.expires_in * 1000; // Convert expires_in to milliseconds
+              return new Date(currentTime + expiresInMs); // Calculate the expiration time
+          }
+          return null;
+      }
 
       function refreshEventsData() {
         setTimeout(() => {
@@ -223,24 +248,36 @@
           const date = new Date();
           // console.log("refreshEventsData ran at this second:",date.getSeconds())
           // if (nowTime.second.toString() == "0" || nowTime.second % 5 == 0) {
-          if (date.getSeconds() == "10" || date.getSeconds() == "30" || date.getSeconds() == "50") {
-            console.log("updateEventsData: ", date.getMilliseconds());
+          if (date.getSeconds() == 10 || date.getSeconds() == 30 || date.getSeconds() == 50) {
+            console.log(`%crefreshEventsData: ${date.toString()}`,`background-color:lavender`);
             // check if we have a valid connection to google calendar api. Don't update data if we cannot connect.
             // except: we still have the old eventsData that has what we got from the API.
             const token = gapi.client.getToken();
-            if (token !== null) {
-              updateEventsData();
-              keepRefreshing = true;
+            const tokenExpiry = setTokenExpiry(token);
+            console.log(`%ctoken: ${JSON.stringify(token)}`, `background-color:lavender`);
+
+            // Check if the token exists and has not expired
+            // Temporal JS way:
+            // if (token && Temporal.Now.instant().compare(Temporal.Now.instant().add({ seconds: token.expires_in })) < 0) {
+            
+              if (token && tokenExpiry > date) {
+                console.log(`%token is valid. Expires: ${tokenExpiry}`, `background-color:lime`);
+                updateEventsData();
             } else {
-              //reset the eventsData to the default, now that we cannot access external calendar data
-              console.log('%cReset eventsData to default:','background-color:yellow')
-              localStorage.setItem("eventsData", localStorage.getItem("eventsDataDefault"));
-              //TODO: I want to break out of refreshEventsData here, now that we know we don't have a connection
-              keepRefreshing = false; // Stop refreshing when we lose connection
-              return; // This return ensures we don't recursively call refreshEventsData again
+                console.log(`%ctoken is invalid or missing`, `background-color:yellow`);
+
+                // Reset the eventsData to the default, now that we cannot access external calendar data
+                console.log('%cReset eventsData to default:', 'background-color:yellow');
+                localStorage.setItem("eventsData", localStorage.getItem("eventsDataDefault"));
+
+                keepRefreshing = false; // Stop refreshing when we lose connection
+                return; // Exit to prevent further execution
             }
+
           }
-          refreshEventsData();
+          if (keepRefreshing) {
+            refreshEventsData(); // Schedule the next check
+        }
         }, 800);
       }
       //NOTE: only trigger refreshEventsData() after you are authorized. 
