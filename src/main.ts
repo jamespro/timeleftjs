@@ -9,6 +9,7 @@ import { eventsDataJSON } from "./eventsdata";
 
 //Where should we restrict to only today's events? (What if you want to work after midnight?)
 // Storing data in LocalStorage
+localStorage.setItem("eventsDataDefault", JSON.stringify(eventsDataJSON));
 localStorage.setItem("eventsData", JSON.stringify(eventsDataJSON));
 let eventsData: {
   start: { dateTime: string; timeZone: string };
@@ -170,6 +171,7 @@ periodName = getPeriodName(nowTime, periodNames);
 console.warn(`periodStart: ${periodStart.toString()}`);
 console.warn(`periodEnd: ${periodEnd.toString()}`);
 console.warn(`periodColor: ${periodColor.toString()}`);
+console.warn(`periodName: ${periodName.toString()}`);
 
 function getPeriodTotalDuration(
   periodStart: Temporal.PlainTime,
