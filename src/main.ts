@@ -134,7 +134,7 @@ function getPeriodColor(
 ) {
   // Find the most recently passed start time to "nowTime" and return the color of the period
   let periodColor = "";
-  for (let i = 0; i <= periodColors.length; i++) {
+  for (let i = 0; i < periodColors.length; i++) {
     if (Temporal.PlainTime.compare(periodColors[i].start, nowTime) < 0) {
       periodColor = periodColors[i].color;
     } else {
@@ -143,7 +143,6 @@ function getPeriodColor(
   }
   return periodColor;
 }
-
 periodColor = getPeriodColor(nowTime, periodColors);
 
 // Get the periodName which is the Name of the period which the time is in
@@ -153,7 +152,7 @@ function getPeriodName(
 ) {
   // Find the most recently passed start time to "nowTime" and return the name of the period
   let periodName = "";
-  for (let i = 0; i <= periodNames.length; i++) {
+  for (let i = 0; i < periodNames.length; i++) {
     if (Temporal.PlainTime.compare(periodNames[i].start, nowTime) < 0) {
       periodName = periodNames[i].name;
     } else {
@@ -167,6 +166,7 @@ const periodNames = Object.values(periods).map((period) => ({
   start: period.start,
   name: period.name,
 }));
+
 periodName = getPeriodName(nowTime, periodNames);
 
 console.warn(`periodStart: ${periodStart.toString()}`);
