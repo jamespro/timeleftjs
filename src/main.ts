@@ -392,6 +392,10 @@ function refresh() {
     let periodStart = getPeriodStart(nowTime, startTimes);
     let periodEnd = getPeriodEnd(nowTime, endTimes);
     let periodColor = getPeriodColor(nowTime, periodColors);
+    let periodName = getPeriodName(nowTime, periodNames);
+    const currentName = document.getElementById("periodName");
+    currentName!.innerText = periodName;
+
     const periodTotalDuration = getPeriodTotalDuration(periodStart, periodEnd);
     // *
     // console.log("periodTotalDuration: " + periodTotalDuration.toString());
