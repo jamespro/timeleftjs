@@ -93,6 +93,7 @@
           document.getElementById('signout_button').style.visibility = 'visible';
           document.getElementById('authorize_button').innerText = 'Refresh';
           // await listUpcomingEvents();
+          // await fetchAndLogAllCalendars();
           await updateEventsData();
           // after the eventsData is updated from external:
           keepRefreshing = true;
@@ -121,6 +122,27 @@
           // document.getElementById('content').innerText = '';
           document.getElementById('authorize_button').innerText = 'Authorize';
           document.getElementById('signout_button').style.visibility = 'hidden';
+        }
+      }
+
+      async function fetchAndLogAllCalendars() {
+        try {
+          const response = await gapi.client.calendar.calendarList.list();
+          const responseItems = response.result.items;
+          const calendars = responseItems.map(calendar => ({
+            id: calendar.id,
+            summary: calendar.summary  // the name of the calendar
+          }));
+          console.warn(`%cCALENDARS fetchAllCalendars:`,`background-color:orange`);
+          console.log(calendars);
+          return calendars;
+        } catch (err) {
+          console.warn(`%cError fetchAllCalendars:`,`background-color:yellow`);
+          console.log(err);
+
+          console.log("Error status (if available):", err.status);
+          console.log("Error message:", err.result?.error?.message || "No error message available");
+          return null;  // Return null or handle the error
         }
       }
 
@@ -158,6 +180,7 @@
             'Events:\n');
         // document.getElementById('content').innerText = output;
       }
+
       // simpler function to retrieve events and return an object, and not update the UI
       async function getEvents() {
         let response;
@@ -173,22 +196,16 @@
           response = await gapi.client.calendar.events.list(request);
         } catch (err) {
           console.warn(`%cError getEvents:`,`background-color:yellow`);
-
-          // Log the entire error object to understand what data is available
           console.log(err);
 
-          // Access more typical error properties
           console.log("Error status (if available):", err.status);
           console.log("Error message:", err.result?.error?.message || "No error message available");
 
-          // Handle specific errors
           if (err.status === 401) {
             // Specific logic to handle unauthorized access, such as refreshing the token or stopping refresh attempts
             console.log("Unauthorized access, need to refresh token or reauthenticate.");
           }
-
-
-          return; // Exit the function upon error
+          return;
         }
         return response.result.items;
       }
