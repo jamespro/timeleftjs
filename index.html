@@ -94,6 +94,7 @@
           document.getElementById('authorize_button').innerText = 'Refresh';
           // await listUpcomingEvents();
           // await fetchAndLogAllCalendars();
+          // await updateCalendarsData();
           await updateEventsData();
           // after the eventsData is updated from external:
           keepRefreshing = true;
@@ -146,11 +147,6 @@
         }
       }
 
-      /**
-       * Print the summary and start datetime/date of the next ten events in
-       * the authorized user's calendar. If no events are found an
-       * appropriate message is printed.
-       */
       async function listUpcomingEvents() {
         let response;
         try {
@@ -180,7 +176,64 @@
             'Events:\n');
         // document.getElementById('content').innerText = output;
       }
+      async function getCalendars() {
+        try {
+          console.warn('%cCALENDAR TRY','background-color:red');
+          const response = await gapi.client.calendar.calendarList.list();
+          const responseItems = response.result.items;
+          const calendars = responseItems.map(calendar => ({
+            id: calendar.id,
+            summary: calendar.summary  // the name of the calendar
+          }));
+          console.warn(`%cCALENDARS getCalendars:`,`background-color:orange`);
+          console.log(calendars);
+          return calendars;
+        } catch (err) {
+          console.warn(`%cError getCalendars:`,`background-color:yellow`);
+          console.log(err);
 
+          console.log("Error status (if available):", err.status);
+          console.log("Error message:", err.result?.error?.message || "No error message available");
+          if (err.status === 401) {
+            // Specific logic to handle unauthorized access, such as refreshing the token or stopping refresh attempts
+            console.log("Unauthorized access, need to refresh token or reauthenticate.");
+          }
+          return null;  // Return null or handle the error
+        }
+      }
+      function updateCalendarsData() {
+        getCalendars().then((response) => {
+
+          if (!response || response.length === 0) {
+            console.warn('No calendars data received');
+            return;
+          }
+              // update calendarsData to use this instead of calendarsDataJSON
+          externalCalendarsData = response;
+          console.log('%cexternalCalendarsData updated:','background-color:lightblue');
+          console.log(externalCalendarsData);
+          // let calendarsData = externalCalendarsData.filter(event => 
+          //   event.start.dateTime && event.end.dateTime
+          // ).map((event) => {
+          //   return {
+          //     start: {
+          //       dateTime: event.start.dateTime,
+          //       timeZone: event.start.timeZone
+          //     },
+          //     end: {
+          //       dateTime: event.end.dateTime,
+          //       timeZone: event.end.timeZone
+          //     }
+          //   } 
+          // });
+          localStorage.setItem("calendarsData", JSON.stringify(externalCalendarsData));
+          console.log('%ccalendarsData updated:','background-color:silver');
+          console.log(calendarsData);
+        }).catch((error) => {
+
+          console.error('Failed to update calendars data:', error);
+        })
+      }
       // simpler function to retrieve events and return an object, and not update the UI
       async function getEvents() {
         let response;
@@ -213,9 +266,8 @@
         getEvents().then((response) => {
 
           if (!response || response.length === 0) {
-            // If the response is empty or undefined, log a warning and stop the refresh.
             console.warn('No events data received, stopping refresh.');
-            keepRefreshing = false; // Assume keepRefreshing is accessible here.
+            keepRefreshing = false;
             return;
           }
               // update eventsData to use this instead of eventsDataJSON
@@ -240,11 +292,12 @@
           console.log('%ceventsData updated:','background-color:silver');
           console.log(eventsData);
         }).catch((error) => {
-          // Handle any errors that occur during getEvents
+
           console.error('Failed to update events data:', error);
-          keepRefreshing = false; // Stop trying to refresh data if an error occurs
+          keepRefreshing = false;
         })
       }
+
       let keepRefreshing = true; // set the default to refresh
 
       function setTokenExpiry(token) {
